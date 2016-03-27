@@ -152,9 +152,19 @@ namespace detail {
          else
          {
             vector<string> seeds = {
+               "81.89.101.133:1777",
+               "104.238.191.99:1781",
+               "120.24.182.36:8091",
+               "128.199.143.47:2017",
+               "139.129.54.169:8091",
+               "139.196.182.71:9091",
+               "159.203.251.178:1776",
+               "185.82.203.92:1974",
+               "192.241.190.227:5197",
+               "192.241.208.17:5197",
                "54.165.143.33:5197", // official seed node
-               "52.20.134.30:39706", // lafona
-               "45.55.13.98:1776" // puppies
+               "45.55.13.98:1776", // puppies
+               "81.89.101.133:1777" // pc
             };
             for( const string& endpoint_string : seeds )
             {
@@ -212,7 +222,9 @@ namespace detail {
          if( !_options->count("rpc-endpoint") )
             return;
 
-         _websocket_server = std::make_shared<fc::http::websocket_server>();
+         bool enable_deflate_compression = _options->count("enable-permessage-deflate") != 0;
+
+         _websocket_server = std::make_shared<fc::http::websocket_server>(enable_deflate_compression);
 
          _websocket_server->on_connection([&]( const fc::http::websocket_connection_ptr& c ){
             auto wsc = std::make_shared<fc::rpc::websocket_api_connection>(*c);
@@ -239,7 +251,8 @@ namespace detail {
          }
 
          string password = _options->count("server-pem-password") ? _options->at("server-pem-password").as<string>() : "";
-         _websocket_tls_server = std::make_shared<fc::http::websocket_tls_server>( _options->at("server-pem").as<string>(), password );
+         bool enable_deflate_compression = _options->count("enable-permessage-deflate") != 0;
+         _websocket_tls_server = std::make_shared<fc::http::websocket_tls_server>( _options->at("server-pem").as<string>(), password, enable_deflate_compression );
 
          _websocket_tls_server->on_connection([&]( const fc::http::websocket_connection_ptr& c ){
             auto wsc = std::make_shared<fc::rpc::websocket_api_connection>(*c);
@@ -933,6 +946,8 @@ void application::set_program_options(boost::program_options::options_descriptio
          ("checkpoint,c", bpo::value<vector<string>>()->composing(), "Pairs of [BLOCK_NUM,BLOCK_ID] that should be enforced as checkpoints.")
          ("rpc-endpoint", bpo::value<string>()->implicit_value("127.0.0.1:8090"), "Endpoint for websocket RPC to listen on")
          ("rpc-tls-endpoint", bpo::value<string>()->implicit_value("127.0.0.1:8089"), "Endpoint for TLS websocket RPC to listen on")
+         ("enable-permessage-deflate", "Enable support for per-message deflate compression in the websocket servers "
+                                       "(--rpc-endpoint and --rpc-tls-endpoint), disabled by default")
          ("server-pem,p", bpo::value<string>()->implicit_value("server.pem"), "The TLS certificate file for this server")
          ("server-pem-password,P", bpo::value<string>()->implicit_value(""), "Password for this certificate")
          ("genesis-json", bpo::value<boost::filesystem::path>(), "File to read Genesis State from")
