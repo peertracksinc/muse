@@ -164,7 +164,8 @@ namespace detail {
                "192.241.208.17:5197",
                "54.165.143.33:5197", // official seed node
                "45.55.13.98:1776", // puppies
-               "81.89.101.133:1777" // pc
+               "81.89.101.133:1777", // pc
+               "212.47.249.84:50796" // iHashFury
             };
             for( const string& endpoint_string : seeds )
             {
